@@ -68,7 +68,9 @@ router.patch('/:productID', (req, res, next) => {
   for (const ops of req.body) { // создаем цикл в котором опс будем являться телом данных полученным ПАТЧ запросом
     updateOps[ops.propName] = ops.value; // создаем массив аргумент которого равен свойству объекта из базы, значение которого будем изменять, а валью собсвтенно это зачение, который мы задает клиент
   }
-  Product.update({ _id: id}, { $set: updateOps }) // _ид: ид - замораживаем значение ИД объекта в базе. сет: апдейтОпс - устанавливает новые значения полученные от клиента, вместо тех что были ранее
+//  Product.findByIdAndUpdate(id, { $set: updateOps })
+//  Product.update({ _id: id}, { $set: updateOps }) // _ид: ид - замораживаем значение ИД объекта в базе. сет: апдейтОпс - устанавливает новые значения полученные от клиента, вместо тех что были ранее
+  Product.findByIdAndUpdate(id, { $set: updateOps })
     .exec()
     .then(result => {
       console.log(result);

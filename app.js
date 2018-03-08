@@ -27,7 +27,7 @@ app.use((req, res, next) => {
     "Origin, X-Requested-With, Content-type, Accept, Authorization"
   );
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'PUT, POST PATCH, GET, DELETE');
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, GET, DELETE');
     return res.status(200).json({});
   }
   next(); // We need to next() cuz we locked
