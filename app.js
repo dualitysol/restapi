@@ -10,6 +10,9 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Подключаемся к МонгоДБ черед ОДМ Монгуз, с указанием именем и паролем админ пользователя
+
+//mongoose.connect('mongodb://localhost:27017/restapi')
+
 mongoose.connect(
   "mongodb://node-rest:node123@cluster0-shard-00-00-8z7rt.mongodb.net:27017,cluster0-shard-00-01-8z7rt.mongodb.net:27017,cluster0-shard-00-02-8z7rt.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
 );
