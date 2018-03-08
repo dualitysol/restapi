@@ -1,25 +1,25 @@
 const express = require('express');
-const productRoutes = require('./routes/products');
-const orderRoutes = require('./routes/orders')
-const port = process.env.PORT || 3001;
+const productRoutes = require('./routes/products'); // Router for domain.com/products/...
+const orderRoutes = require('./routes/orders') //  Router for domain.com/order/...
+const port = process.env.PORT || 3001; // процесс.енв.ПОРТ используем на случай, если будем деплоить приложуху на хосте, с конкретно выделенным для нас портом
 const app = express();
-const morgan = require('morgan');
-var runTime = require('./micromodules/date_time.js')
+const morgan = require('morgan'); // подключем модуль логгера
+var runTime = require('./micromodules/date_time.js') // requre timer for deploy runnig time in terminal
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// DB connection
+// Подключаемся к МонгоДБ черед ОДМ Монгуз, с указанием именем и паролем админ пользователя
 mongoose.connect(
-  "mongodb://node-rest:node123@cluster0-shard-00-00-8z7rt.mongodb.net:27017,cluster0-shard-00-01-8z7rt.mongodb.net:27017,cluster0-shard-00-02-8z7rt.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin",
-  {
-    useMongoClient: true
-  }
+  "mongodb://node-rest:node123@cluster0-shard-00-00-8z7rt.mongodb.net:27017,cluster0-shard-00-01-8z7rt.mongodb.net:27017,cluster0-shard-00-02-8z7rt.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
 );
-app.use(morgan('dev')); //logger
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
 
+//включаем логгер и парсер html и json для возможности обмена данными
+app.use(morgan('dev')); // логгер
+app.use(bodyParser.urlencoded({extended: false})); // модуль для парсинга html типа данных
+app.use(bodyParser.json()); // модуль для приема данных json типа
+
+// Устраняем ошибку доступа подключения с разных серверов и позволяем подключение любому клиенту вне зависимости от IP и порта
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -33,16 +33,18 @@ app.use((req, res, next) => {
   next(); // We need to next() cuz we locked
 });
 
-// Routes that handles requests
-app.use('/products', productRoutes);
-app.use('/order', orderRoutes);
+// Роутер для приема запросов
+app.use('/products', productRoutes); // путь для продуктов
+app.use('/order', orderRoutes); // путь для заказов
 
+// Создаем код ошибки для 404
 app.use((req, res, next) => {
   const error = new Error('Not found');
   error.status = 404;
   next(error);
 });
 
+// создаем код ошибки 500(любого другого рода)
 app.use((error, req, res, next) => {
   res.status(error.status || 500);
   res.json({
