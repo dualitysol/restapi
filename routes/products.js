@@ -2,21 +2,29 @@ const express = require('express');
 var app = express();
 var router = express.Router();
 const mongoose = require('mongoose'); // загружаем ОДМ для работы с МонгоДБ
-
+const products_url = "http://localhost:3001/products/"; // Make our url as a domain
 const Product = require('../models/product'); // загружаем модель(схему) продукта для обмена данными с базой и создании в ней документов в виде нашей модели(схеме) продукта
 
 router.get('/', (req, res, next) => {  // роутер ГЕТ запроса
   Product.find() // Осуществляем поиск всех документов(продуктов в данном случае) в базе
+    .select('name price _id')
     .exec() // создаем что-то вроде "промисса"
     .then(docs => {
-      console.log(docs); // выводим все документы(продукты) в терминал
-      if (docs.length >= 0) {
-        res.status(200).json(docs); // отдаем клиенту все документы(продукты) в виде json
-      } else {
-        res.status(200).json({
-          message: "Catalog is empty now!" // отдаем клиенту json сообщение, что список продуктов пуст
-        });
-      }
+      const response = {
+        count: docs.length,
+        products: docs.map(doc => {
+          return {
+            name: doc.name,
+            price: doc.price,
+            _id: doc._id,
+            request: {
+              type: 'GET',
+              url: products_url + doc._id
+            }
+          }
+        })
+      };
+      res.status(200).json(response); // отдаем клиенту все документы(продукты) в виде json
     })
     .catch(err => { // пытаемся словить ошибку, если она есть
       console.log(err); // выводим ее в терминал
@@ -28,7 +36,7 @@ router.get('/', (req, res, next) => {  // роутер ГЕТ запроса
 
 router.post('/', (req, res, next) => { // роутер ПОСТ запроса
   const product = new Product ({ // Конструктор экзепляра продукта (_ИД в базе, имя, цена)
-    _id: new mongoose.Types.ObjectId(), // формирует уникальный ИД в МонгоДБ для нашего продукта
+    _id: new mongoose.Types.ObjectId(), // формирует новый уникальный ИД в МонгоДБ для нашего продукта
     name: req.body.name, // устанавливает название заданное ПОСТ запросом
     price: req.body.price // устанавливает цену заданную ПОСТ запросом
   });
@@ -36,20 +44,33 @@ router.post('/', (req, res, next) => { // роутер ПОСТ запроса
     .save() // сохраняем созданный экземпляр продукта. save() это mongoose модуль, который заносит данные в МонгоДБ
     .then( result => {
       console.log(result); // выводим результат(ПОЛУЧЕННЫЙ ИЗ БД) в терминал ( для логгирования)
+      res.status(201).json({
+        message: `Product ${result.name} has been created!`,
+        createdProduct: {
+          price: result.price,
+          _id: result._id,
+          request: {
+            link: products_url + result._id
+          }
+        }
+      });
     })
-    .catch(err => console.log(err)); // пытаемся словить ошибки, если получается, то выводим в терминал
-  res.status(201).json({
-    message: 'Handling a POST request on /products',
-    createdProduct: product
-  });
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
+    }); // пытаемся словить ошибки, если получается, то выводим в терминал
+
 });
 
 router.get('/:productID', (req, res, next) => { // отправляем данные конкретного продукта(по ИД)
   var id = req.params.productID; //устанавливаем ИД по полученному от клиента
   Product.findById(id) //ф-ия поиска по ИД
+    .select('name price _id')
     .exec() // ее выполнение
     .then(doc => {
-      console.log('From DB: ' + doc); // выводим данные из базы в терминал
+      console.log('From DB: ', doc); // выводим данные из базы в терминал
       if (doc) { //если данные в базе есть
         res.status(200).json(doc) // отдаем json объект с данными(запрашиваемый продукт) клиенту
       } else { // если данных нет
@@ -87,7 +108,9 @@ router.delete('/:productID', (req, res, next) => { //удаляем данные
   Product.remove({ _id: id }) // удаляем документ по заданному ИД
     .exec() // типа промиса
     .then( result => {
-      res.status(200).json(result) // отдаем результат клиенту в json
+      res.status(200).json({
+        message: "Product deleted!"
+      }) // отдаем результат клиенту в json
     })
     .catch(err => { // ловим ошибку, если есть
       res.status(500).json({ // отдаем ошибку 500
