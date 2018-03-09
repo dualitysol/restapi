@@ -7,17 +7,17 @@ const Product = require('../models/product'); // загружаем модель
 
 router.get('/', (req, res, next) => {  // роутер ГЕТ запроса
   Product.find() // Осуществляем поиск всех документов(продуктов в данном случае) в базе
-    .select('name price _id')
+    .select('name price _id') // указываем параметры документа базы данных, которые мы дудем из него доставать
     .exec() // создаем что-то вроде "промисса"
     .then(docs => {
-      const response = {
-        count: docs.length,
-        products: docs.map(doc => {
+      const response = { // создаем конструктор наего ответа клиету на запрос всех наших продуктов
+        count: docs.length, // выводим количество наших продуктов
+        products: docs.map(doc => { // создаем тело объекта, какие конкретно атрибуты продукта будут отображаться
           return {
             name: doc.name,
             price: doc.price,
             _id: doc._id,
-            request: {
+            request: { // создаем паттерн для запроса, по сути кликабельную ссылку на наш продукт
               type: 'GET',
               url: products_url + doc._id
             }
@@ -47,20 +47,20 @@ router.post('/', (req, res, next) => { // роутер ПОСТ запроса
       res.status(201).json({
         message: `Product ${result.name} has been created!`,
         createdProduct: {
-          price: result.price,
-          _id: result._id,
-          request: {
-            link: products_url + result._id
+          price: result.price, // Выводим созданную цену
+          _id: result._id, // выводим наш ИД продукта
+          request: { // создаем паттерн для запроса, по сути кликабельную ссылку на наш продукт
+            link: products_url + result._id // ссылка на "домен.ком/продукты/ + ИД нашего продукта", то есть ссылка на созданный продукт
           }
         }
       });
     })
     .catch(err => {
-      console.log(err);
+      console.log(err); // пытаемся словить ошибки, если получается, то выводим в терминал
       res.status(500).json({
-        error: err
+        error: err // тут ошибку отдаем клиенту
       });
-    }); // пытаемся словить ошибки, если получается, то выводим в терминал
+    });
 
 });
 
@@ -117,9 +117,6 @@ router.delete('/:productID', (req, res, next) => { //удаляем данные
         error: err // сообщение об ошибке из mongoose
       });
     });
-  // res.status(200).json({
-  //   message: 'Deleted product!'
-  // });
 });
 
 module.exports = router; // экспортируем модуль нашего продукт-роутера для вызова

@@ -38,7 +38,7 @@ app.use((req, res, next) => {
 
 // Роутер для приема запросов
 app.use('/products', productRoutes); // путь для продуктов
-app.use('/order', orderRoutes); // путь для заказов
+app.use('/orders', orderRoutes); // путь для заказов
 
 // Создаем код ошибки для 404
 app.use((req, res, next) => {
