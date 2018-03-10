@@ -9,7 +9,8 @@ const Product = require('../models/product');
 
 router.get('/', (req, res, next) => {
   Order.find()
-    .select('producct quantity _id')
+    .select('product quantity _id')
+    .populate('product', 'name')
     .exec()
     .then(docs => {
       res.status(200).json({
@@ -74,13 +75,14 @@ router.post('/', (req, res, next) => {
 
 router.get('/:orderID', (req, res, next) => {
   Order.findById(req.params.orderID)
+    .populate('product')
     .exec()
     .then(order => {
       res.status(200).json({
         order: order,
         request: {
           type: 'GET',
-          url: products_url + order.product
+          url: products_url + order.product._id
         }
       })
     })

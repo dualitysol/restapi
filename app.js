@@ -8,6 +8,7 @@ var runTime = require('./micromodules/date_time.js') // requre timer for deploy 
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const userRoutes = require('./routes/user');
 
 // Подключаемся к МонгоДБ черед ОДМ Монгуз, с указанием именем и паролем админ пользователя
 
@@ -39,6 +40,8 @@ app.use((req, res, next) => {
 // Роутер для приема запросов
 app.use('/products', productRoutes); // путь для продуктов
 app.use('/orders', orderRoutes); // путь для заказов
+app.use('/uploads', express.static('./uploads'));
+app.use('/user', userRoutes);
 
 // Создаем код ошибки для 404
 app.use((req, res, next) => {
