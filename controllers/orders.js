@@ -1,12 +1,11 @@
 const Order = require('../models/order');
 const Product = require('../models/product');
 const mongoose = require('mongoose');
-const orders_url = "http://localhost:3001/orders/";
-const products_url = "http://localhost:3001/products/";
+const process = require('../config');
 
 exports.GetAllOrders =  (req, res, next) => {
-  Order.find()
-    .select('product quantity _id')
+  Order.find({ customer: req.userData.userID})
+    .select('product quantity _id status')
     .populate('product', 'name')
     .exec()
     .then(docs => {
@@ -19,7 +18,7 @@ exports.GetAllOrders =  (req, res, next) => {
             quantity: doc.quantity,
             request: {
               type: 'GET',
-              url: orders_url + doc._id
+              url: process.env.URL + '/orders/' + doc._id
             }
           }
         })
@@ -32,7 +31,7 @@ exports.GetAllOrders =  (req, res, next) => {
       })
     });
 };
-
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImZvcmRlbGV0ZUBnbWFpbC5jb20iLCJ1c2VySUQiOiI1YWE1OTUwMzQxNTg2NjFkZTgxZDg0MzAiLCJpYXQiOjE1MjA4MDEwMzMsImV4cCI6MTUyMDgwNDYzM30.n0zeIH5rSuhF2i0W7rJf5fLbLIeCGxPK2PKuJ61w5i4
 exports.CreateNewOrder = (req, res, next) => {
   Product.findById(req.body.productID)
     .then(product => {
@@ -44,7 +43,8 @@ exports.CreateNewOrder = (req, res, next) => {
       const order = new Order ({
         _id: mongoose.Types.ObjectId(),
         quantity: req.body.quantity,
-        product: req.body.productID
+        product: req.body.productID,
+        customer: req.userData.userID
       });
       return order.save()
     })
@@ -55,11 +55,12 @@ exports.CreateNewOrder = (req, res, next) => {
         createdOreder: {
           _id: result._id,
           product: result.product,
-          quantity: result.quantity
+          quantity: result.quantity,
+          customer: result.customer
         },
         request: {
           type: 'GET',
-          url: orders_url + result._id
+          url: process.env.URL + '/orders/' + result._id
         }
       });
     })
@@ -75,13 +76,19 @@ exports.GetOrderById = (req, res, next) => {
     .populate('product')
     .exec()
     .then(order => {
-      res.status(200).json({
-        order: order,
-        request: {
-          type: 'GET',
-          url: products_url + order.product._id
-        }
-      })
+      if (order.customer == req.userData.userID) {
+        res.status(200).json({
+          order: order,
+          request: {
+            type: 'GET',
+            url: process.env.URL + '/products/' + order.product._id
+          }
+        })
+      } else {
+        res.status(500).json({
+          error: "Auth fail!"
+        });
+      }
     })
     .catch(err => {
       res.status(500).json({
@@ -94,14 +101,20 @@ exports.DeleteOrderById = (req, res, next) => {
   Order.remove({_id: req.params.orderID})
     .exec()
     .then( result => {
-      res.status(200).json({
-        message: "Order deleted!",
-        orderID: req.params.orderID,
-        request: {
-          type: 'GET',
-          url: products_url
-        }
-      });
+      if (result.customer == req.userData.userID){
+        res.status(200).json({
+          message: "Order deleted!",
+          orderID: req.params.orderID,
+          request: {
+            type: 'GET',
+            url: process.env.URL + '/products/'
+          }
+        });
+      } else {
+        res.status(500).json({
+          error: 'Auth fail!'
+        });
+      }
     })
     .catch( err => {
       res.status(404).json({

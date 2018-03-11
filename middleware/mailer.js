@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+/*const nodemailer = require('nodemailer');
 const oauth2 = require('oauth2');
 
 const transporter = nodemailer.createTransport({
@@ -27,3 +27,4 @@ const sender = transporter.sendMail(mailOptions, (err, res) => {
     console.log('Mail sent!');
   }
 });
+*/

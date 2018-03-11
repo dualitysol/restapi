@@ -1,3 +1,4 @@
+const process = require('./config.js');
 const express = require('express');
 const productRoutes = require('./routes/products'); // Router for domain.com/products/...
 const orderRoutes = require('./routes/orders') //  Router for domain.com/order/...
@@ -9,13 +10,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/user');
-const Mailer = require('./middleware/mailer');
 // Подключаемся к МонгоДБ черед ОДМ Монгуз, с указанием именем и паролем админ пользователя
-
-//mongoose.connect('mongodb://localhost:27017/restapi')
-
 mongoose.connect(
-  "mongodb://node-rest:node123@cluster0-shard-00-00-8z7rt.mongodb.net:27017,cluster0-shard-00-01-8z7rt.mongodb.net:27017,cluster0-shard-00-02-8z7rt.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
+  process.env.Database
 );
 
 //включаем логгер и парсер html и json для возможности обмена данными

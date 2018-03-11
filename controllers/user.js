@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const user_url = "http://localhost:3001/user/";
 const User = require('../models/user');
 const bcrypt = require('bcrypt'); // не кроссплатформенный, по этому необходимо переустановить на Маке или Линуксе
 const jwt = require('jsonwebtoken');
-const JWT_KEY = 'secret'; // BYDLO-CODE
+const process = require('../config');
 
 exports.SignUp = (req, res, next) => {
   User.find({email: req.body.email})
@@ -60,11 +59,18 @@ exports.Login = (req, res, next) => {
             message: 'Auth failed!'
           });
         }
+        /*
+        const payload = {
+          admin: user.admin
+        };
+
+
+        */
         if (hash_result) {
           const token = jwt.sign({
             email: user[0].email,
             userID: user[0]._id
-          }, JWT_KEY , // тут должен быть process.env.JWT_KEY в деплое, но мы его забыдлокодили вверху
+          }, process.env.JWT_KEY , // тут должен быть process.env.JWT_KEY в деплое, но мы его забыдлокодили вверху
           {
             expiresIn: "1h"
           }
