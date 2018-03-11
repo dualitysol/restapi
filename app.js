@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/user');
-
+const Mailer = require('./middleware/mailer');
 // Подключаемся к МонгоДБ черед ОДМ Монгуз, с указанием именем и паролем админ пользователя
 
 //mongoose.connect('mongodb://localhost:27017/restapi')
@@ -59,6 +59,7 @@ app.use((error, req, res, next) => {
     }
   });
 });
+
 // Server run
 app.listen(port);
 console.log();
