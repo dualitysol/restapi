@@ -94,6 +94,57 @@ exports.Login = (req, res, next) => {
     });
 };
 
+exports.AdminLogin = (req, res, next) => {
+  User.find({ email: req.body.email, admin: true})
+    .exec()
+    .then(user => {
+      if (user.length < 1){
+        return res.status(401).json({
+          message: 'Auth failed!'
+        });
+      }
+      bcrypt.compare(req.body.password, user[0].password, (err, hash_result) => {
+        if (err) {
+          return res.status(401).json({
+            message: 'Auth failed!'
+          });
+        }
+        /*
+        const payload = {
+          admin: user.admin
+        };
+
+
+        */
+        if (hash_result) {
+          const token = jwt.sign({
+            email: user[0].email,
+            userID: user[0]._id,
+            admin: "admin"
+          }, process.env.JWT_KEY , // тут должен быть process.env.JWT_KEY в деплое, но мы его забыдлокодили вверху
+          {
+            expiresIn: "1h"
+          }
+        );
+          return res.status(200).json({
+            message: 'Auth successful!',
+            token: token
+          });
+        } else {
+          return res.status(401).json({
+            message: 'Auth failed!'
+          });
+        }
+      })
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
+    });
+};
+
 exports.DeleteAccount = (req, res, next) => { //удаляем данные продукта
   const id = req.params.userID; // задаем ИД
   User.remove({ _id: id }) // удаляем документ по заданному ИД

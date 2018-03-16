@@ -7,6 +7,8 @@ router.post('/signup', UserController.SignUp);
 
 router.post('/login', UserController.Login);
 
+router.post('/admin', UserController.AdminLogin);
+
 router.delete('/:userID', checkAuth, UserController.DeleteAccount);
 
 module.exports = router;

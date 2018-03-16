@@ -1,1 +1,4 @@
 config.js
+node_modules
+mysql.js
+sqlz.js
